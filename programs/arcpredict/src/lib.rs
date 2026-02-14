@@ -3,7 +3,7 @@ use arcium_anchor::prelude::*;
 
 const COMP_DEF_OFFSET_UPDATE: u32 = comp_def_offset("update_market_state");
 
-declare_id!("7BCssCRY4GVHTEUuwis7bXFmXDpy8H4M7fNDWDBxA5gU");
+declare_id!("ARyfGGycpReujchifKTXsGZxD1KDxDsg8bLjnnJEeRWQ");
 
 #[arcium_program]
 pub mod arcpredict {
@@ -58,7 +58,8 @@ pub mod arcpredict {
             ctx.accounts,
             computation_offset,
             args,
-            vec![UpdateCallback::callback_ix(
+            // 修正 1: 使用正确的结构体名称 UpdateMarketStateCallback
+            vec![UpdateMarketStateCallback::callback_ix(
                 computation_offset,
                 &ctx.accounts.mxe_account,
                 &[]
@@ -71,7 +72,8 @@ pub mod arcpredict {
 
     #[arcium_callback(encrypted_ix = "update_market_state")]
     pub fn update_market_state_callback(
-        ctx: Context<UpdateCallback>,
+        // 修正 2: 使用正确的结构体名称
+        ctx: Context<UpdateMarketStateCallback>,
         output: SignedComputationOutputs<UpdateMarketStateOutput>,
     ) -> Result<()> {
         let o = match output.verify_output(&ctx.accounts.cluster_account, &ctx.accounts.computation_account) {
@@ -159,9 +161,10 @@ pub struct PlaceBet<'info> {
     pub arcium_program: Program<'info, Arcium>,
 }
 
+// 修正 3: 结构体名称必须是 UpdateMarketStateCallback
 #[callback_accounts("update_market_state")]
 #[derive(Accounts)]
-pub struct UpdateCallback<'info> {
+pub struct UpdateMarketStateCallback<'info> {
     pub arcium_program: Program<'info, Arcium>,
     #[account(address = derive_comp_def_pda!(COMP_DEF_OFFSET_UPDATE))]
     pub comp_def_account: Account<'info, ComputationDefinitionAccount>,
