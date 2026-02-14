@@ -123,7 +123,7 @@
                 <div>
                     <h4 class="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">防操纵机制 (Anti-Herding)</h4>
                     <p class="text-[11px] text-slate-400 leading-relaxed">
-                        Arcium 利用 FHE 隐藏实时投注权重。在结果揭晓前，没有任何参与者能看到当前赔率，有效防止大户通过巨量买单诱导市场情绪。
+                        Arcium 利用 MPC 隐藏实时投注权重。在结果揭晓前，没有任何参与者能看到当前赔率，有效防止大户通过巨量买单诱导市场情绪。
                     </p>
                 </div>
             </div>
@@ -144,7 +144,7 @@
                     </div>
                     <div class="space-y-2">
                         <h3 class="font-bold text-slate-300">赔率迷雾 (Odds Nebula) 生效中</h3>
-                        <p class="text-xs text-slate-600 max-w-xs mx-auto">当前资金池比例对公众及节点操作员<span class="text-indigo-400 font-bold tracking-widest ml-1">已加密</span></p>
+                        <p class="text-xs text-slate-600 max-w-xs mx-auto">当前资金池比例对公众及节点操作员<span class="text-indigo-400 font-bold tracking-widest ml-1">已机密化</span></p>
                         <p class="text-[9px] text-slate-700 uppercase tracking-[0.3em] font-black pt-4">Awaiting Confidential Input</p>
                     </div>
                 </div>
@@ -224,21 +224,21 @@
             currentSide = 1;
             sideYESBtn.className = "py-4 rounded-2xl border-2 border-indigo-500 bg-indigo-500/10 text-indigo-400 font-black transition text-sm";
             sideNOBtn.className = "py-4 rounded-2xl border border-slate-800 text-slate-500 font-black hover:border-slate-700 transition text-sm";
-            addLiveLog("Intention set: YES (Side::1). Encrypting locally...", "text-indigo-400");
+            addLiveLog("Intention set: YES (Side::1). Secret Sharing locally...", "text-indigo-400");
         });
 
         sideNOBtn.addEventListener('click', () => {
             currentSide = 2;
             sideNOBtn.className = "py-4 rounded-2xl border-2 border-purple-500 bg-purple-500/10 text-purple-400 font-black transition text-sm";
             sideYESBtn.className = "py-4 rounded-2xl border border-slate-800 text-slate-500 font-black hover:border-slate-700 transition text-sm";
-            addLiveLog("Intention set: NO (Side::2). Encrypting locally...", "text-purple-400");
+            addLiveLog("Intention set: NO (Side::2). Secret Sharing locally...", "text-purple-400");
         });
 
         const mxePhases = [
             "Generating ephemeral x25519 session keys...",
             "Lifting bet amount (u64) to SharedEncryptedStruct...",
             "Executing update_market_state circuit on MXE Cluster...",
-            "Performing homomorphic accumulation on YES/NO pools...",
+            "Performing oblivious accumulation on YES/NO pools...",
             "Syncing state-root across Recovery Set (Size 4)...",
             "Broadcasting threshold commitment to Solana Devnet..."
         ];
@@ -256,7 +256,7 @@
             if (!amt || amt <= 0) return;
 
             submitBtn.disabled = true;
-            btnText.innerText = "FHE AGGREGATING...";
+            btnText.innerText = "MPC AGGREGATING...";
             btnIcon.className = "fas fa-spinner fa-spin";
 
             idleState.classList.add('hidden');

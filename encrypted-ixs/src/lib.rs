@@ -14,7 +14,7 @@ mod prediction_engine {
         pub side: u64, // 1 = YES, 2 = NO
     }
 
-    // 状态更新输出
+    // State update output
     pub struct StateUpdateResult {
         pub new_yes_pool: u64,
         pub new_no_pool: u64,
@@ -28,7 +28,7 @@ mod prediction_engine {
         let state = current_state.to_arcis();
         let bet = user_bet.to_arcis();
 
-        // 核心逻辑：使用 Mux 根据用户选择更新对应的池子
+        // Core logic: Use Mux to update the corresponding pool based on the user's choice
         // Side 1 (YES): YesPool + Amount
         // Side 2 (NO):  NoPool + Amount
         
@@ -45,7 +45,7 @@ mod prediction_engine {
             new_no_pool: new_no,
         };
 
-        // 返回给 Program (Owner) 更新链上状态
+        // Return to the Program (Owner) to update the on-chain state
         current_state.owner.from_arcis(result)
     }
 }

@@ -14,12 +14,12 @@ pub mod arcpredict {
         Ok(())
     }
 
-    /// [新增] 初始化预测市场
+    /// [New] Initialize prediction market
     pub fn create_market(ctx: Context<CreateMarket>, topic: String) -> Result<()> {
         let market = &mut ctx.accounts.market;
         market.authority = ctx.accounts.authority.key();
-        // 初始化加密池为 0 (假设前端已生成了代表0的密文，或者由首次计算初始化)
-        // 这里为了简化，我们假设初始状态是特定的空密文
+        // Initialize encrypted pools to 0 (assuming the frontend has generated ciphertexts representing 0, or initialized during the first computation)
+        // Here, for simplicity, we assume the initial state is a specific empty ciphertext
         market.encrypted_yes_pool = [0u8; 32]; 
         market.encrypted_no_pool = [0u8; 32];
         market.topic = topic;
@@ -27,13 +27,13 @@ pub mod arcpredict {
         Ok(())
     }
 
-    /// [升级] 下注 (Place Bet)
-    /// 读取当前的加密池状态，发送给 MXE 进行累加更新
+    /// [Upgrade] Place a bet
+    /// Read the current encrypted pool state and send it to MXE for cumulative updates
     pub fn place_bet(
         ctx: Context<PlaceBet>,
         computation_offset: u64,
-        encrypted_amount: [u8; 32], // 用户加密的金额
-        encrypted_side: [u8; 32],   // 用户加密的选择 (1 or 2)
+        encrypted_amount: [u8; 32], // User-encrypted amount
+        encrypted_side: [u8; 32],   // User-encrypted choice (1 or 2)
         pubkey: [u8; 32],
         nonce: u128,
     ) -> Result<()> {
@@ -42,7 +42,7 @@ pub mod arcpredict {
 
         ctx.accounts.sign_pda_account.bump = ctx.bumps.sign_pda_account;
         
-        // 构建参数：Current State + User Bet
+        // Construct parameters: Current State + User Bet
         let args = ArgBuilder::new()
             .x25519_pubkey(pubkey)
             .plaintext_u128(nonce)
@@ -58,7 +58,7 @@ pub mod arcpredict {
             ctx.accounts,
             computation_offset,
             args,
-            // 修正 1: 使用正确的结构体名称 UpdateMarketStateCallback
+            // Fix 1: Use the correct struct name UpdateMarketStateCallback
             vec![UpdateMarketStateCallback::callback_ix(
                 computation_offset,
                 &ctx.accounts.mxe_account,
@@ -72,7 +72,7 @@ pub mod arcpredict {
 
     #[arcium_callback(encrypted_ix = "update_market_state")]
     pub fn update_market_state_callback(
-        // 修正 2: 使用正确的结构体名称
+        // Fix 2: Use the correct struct name
         ctx: Context<UpdateMarketStateCallback>,
         output: SignedComputationOutputs<UpdateMarketStateOutput>,
     ) -> Result<()> {
@@ -81,11 +81,11 @@ pub mod arcpredict {
             Err(_) => return Err(ErrorCode::AbortedComputation.into()),
         };
 
-        // 更新链上状态为新的密文
+        // Update the on-chain state to the new ciphertext
         let market = &mut ctx.accounts.market;
         
-        // Arcis 返回: { new_yes_pool, new_no_pool }
-        let new_yes_bytes: [u8; 32] = o.ciphertexts[0]; // 保持密文状态 (32 bytes)
+        // Arcis returns: { new_yes_pool, new_no_pool }
+        let new_yes_bytes: [u8; 32] = o.ciphertexts[0]; // Keep ciphertext state (32 bytes)
         let new_no_bytes: [u8; 32] = o.ciphertexts[1];
 
         market.encrypted_yes_pool = new_yes_bytes;
@@ -121,8 +121,8 @@ pub struct CreateMarket<'info> {
 #[account]
 pub struct Market {
     pub authority: Pubkey,
-    pub encrypted_yes_pool: [u8; 32], // 存储密文
-    pub encrypted_no_pool: [u8; 32],  // 存储密文
+    pub encrypted_yes_pool: [u8; 32], // Store ciphertext
+    pub encrypted_no_pool: [u8; 32],  // Store ciphertext
     pub topic: String,
     pub is_resolved: bool,
 }
@@ -134,7 +134,7 @@ pub struct PlaceBet<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(mut)]
-    pub market: Account<'info, Market>, // 需要读取并稍后更新
+    pub market: Account<'info, Market>, // Needs to be read and updated later
     
     #[account(init_if_needed, space = 9, payer = payer, seeds = [&SIGN_PDA_SEED], bump, address = derive_sign_pda!())]
     pub sign_pda_account: Account<'info, ArciumSignerAccount>,
@@ -161,7 +161,7 @@ pub struct PlaceBet<'info> {
     pub arcium_program: Program<'info, Arcium>,
 }
 
-// 修正 3: 结构体名称必须是 UpdateMarketStateCallback
+// Fix 3: Struct name must be UpdateMarketStateCallback
 #[callback_accounts("update_market_state")]
 #[derive(Accounts)]
 pub struct UpdateMarketStateCallback<'info> {
@@ -172,7 +172,7 @@ pub struct UpdateMarketStateCallback<'info> {
     pub mxe_account: Box<Account<'info, MXEAccount>>,
     /// CHECK: Comp
     pub computation_account: UncheckedAccount<'info>,
-    #[account(mut)] // 写入新的密文状态
+    #[account(mut)] // Write new ciphertext state
     pub market: Account<'info, Market>,
     #[account(address = derive_cluster_pda!(mxe_account, ErrorCode::ClusterNotSet))]
     pub cluster_account: Account<'info, Cluster>,
